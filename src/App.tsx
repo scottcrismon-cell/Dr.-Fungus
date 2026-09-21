@@ -7,6 +7,8 @@ import {
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  Stethoscope,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
@@ -324,11 +326,48 @@ function App() {
 
             {result && (
               <div className="result-panel" aria-live="polite">
-                <div className="result-icon"><Sparkles size={22} /></div>
-                <div>
-                  <span>PHOTO CHECK PREPARED</span>
-                  <h3>Analysis engine coming next</h3>
-                  <p>{result.message}</p>
+                <div className="result-banner">
+                  <div className="result-icon"><Sparkles size={22} /></div>
+                  <div>
+                    <span>SIMULATED PHOTO ASSESSMENT</span>
+                    <h3>{result.headline}</h3>
+                    <p>{result.summary}</p>
+                  </div>
+                </div>
+
+                <div className="simulation-warning">
+                  <TriangleAlert size={17} aria-hidden="true" />
+                  <strong>{result.disclaimer}</strong>
+                </div>
+
+                <div className="result-grid">
+                  <div className="result-section">
+                    <span className="result-label">POSSIBLE MATCH</span>
+                    <strong>{result.possibleMatch}</strong>
+                    <small>Based on your selected concern only</small>
+                  </div>
+                  <div className="result-section urgency-section">
+                    <span className="result-label">SUGGESTED TIMING</span>
+                    <strong><Stethoscope size={17} /> {result.urgency} follow-up</strong>
+                    <small>Seek care sooner if symptoms worsen</small>
+                  </div>
+                </div>
+
+                <div className="result-details">
+                  <div>
+                    <h4>Other possibilities</h4>
+                    <ul>
+                      {result.otherPossibilities.map((possibility) => (
+                        <li key={possibility}>{possibility}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4>What to do next</h4>
+                    <ol>
+                      {result.nextSteps.map((step) => <li key={step}>{step}</li>)}
+                    </ol>
+                  </div>
                 </div>
               </div>
             )}
