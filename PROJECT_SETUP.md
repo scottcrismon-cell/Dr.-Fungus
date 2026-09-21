@@ -19,6 +19,8 @@ The product must not present its output as a confirmed medical diagnosis. A prod
 - Clear urgent-care guidance for potentially serious symptoms.
 - A simulated assessment card with a possible match, alternative explanations,
   follow-up timing, suggested next steps, and an explicit prototype warning.
+- A second Therapies page with searchable foot-care categories and external
+  retailer links. Dr. Fungus does not currently process purchases or checkout.
 - A generated editorial hero image and custom favicon.
 - A production build command that completes successfully.
 - Source code committed and pushed to the GitHub `main` branch.

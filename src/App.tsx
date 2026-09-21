@@ -2,9 +2,13 @@ import {
   ArrowRight,
   Camera,
   Check,
+  ExternalLink,
+  Footprints,
   ImagePlus,
   LockKeyhole,
+  PackageSearch,
   RefreshCw,
+  Search,
   ShieldCheck,
   Sparkles,
   Stethoscope,
@@ -22,8 +26,181 @@ const MAX_FILE_SIZE = 12 * 1024 * 1024;
 const acceptedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
 
 type Stage = "idle" | "ready" | "saving" | "complete" | "error";
+type Page = "check" | "therapies";
+
+const therapyCategories = ["All", "Skin", "Nails", "Comfort"] as const;
+type TherapyCategory = (typeof therapyCategories)[number];
+
+const therapies: Array<{
+  name: string;
+  category: Exclude<TherapyCategory, "All">;
+  description: string;
+  use: string;
+  query: string;
+  accent: string;
+}> = [
+  {
+    name: "Antifungal creams",
+    category: "Skin",
+    description: "Topical creams commonly marketed for athlete’s foot and similar fungal skin concerns.",
+    use: "For external skin only",
+    query: "antifungal cream",
+    accent: "sky",
+  },
+  {
+    name: "Antifungal sprays",
+    category: "Skin",
+    description: "No-touch spray formats designed for convenient application to affected skin.",
+    use: "Useful for hard-to-reach areas",
+    query: "antifungal spray",
+    accent: "sage",
+  },
+  {
+    name: "Medicated foot powders",
+    category: "Skin",
+    description: "Powders intended to help keep feet dry while treating or preventing fungal growth.",
+    use: "For moisture-prone feet",
+    query: "antifungal foot powder",
+    accent: "sand",
+  },
+  {
+    name: "Nail care treatments",
+    category: "Nails",
+    description: "Over-the-counter products sold for discolored, brittle, or fungus-affected nails.",
+    use: "Check the labeled indication",
+    query: "toenail fungus treatment",
+    accent: "lavender",
+  },
+  {
+    name: "Foot moisturizers",
+    category: "Comfort",
+    description: "Rich creams and balms for dry, rough, or cracked skin on heels and feet.",
+    use: "For dry skin support",
+    query: "foot cream cracked heels",
+    accent: "peach",
+  },
+  {
+    name: "Toe cushions & protectors",
+    category: "Comfort",
+    description: "Non-medicated pads and sleeves that may reduce rubbing and pressure inside shoes.",
+    use: "For friction and pressure",
+    query: "toe protectors cushions",
+    accent: "mint",
+  },
+];
+
+function TherapiesPage() {
+  const [category, setCategory] = useState<TherapyCategory>("All");
+  const [search, setSearch] = useState("");
+
+  const shownTherapies = therapies.filter((therapy) => {
+    const matchesCategory = category === "All" || therapy.category === category;
+    const text = `${therapy.name} ${therapy.description} ${therapy.use}`.toLowerCase();
+    return matchesCategory && text.includes(search.trim().toLowerCase());
+  });
+
+  return (
+    <div className="therapies-page">
+      <section className="shop-hero" aria-labelledby="therapies-title">
+        <div>
+          <span className="eyebrow">CURATED FOOT-CARE SHOPPING</span>
+          <h1 id="therapies-title">Find the right kind of <em>care.</em></h1>
+          <p>
+            Explore common over-the-counter categories, then compare current
+            products directly from established retailers.
+          </p>
+        </div>
+        <div className="shop-hero-note">
+          <ShieldCheck size={22} />
+          <div>
+            <strong>Shop with context</strong>
+            <span>We organize the options. Retailers handle products, pricing, and checkout.</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="shop-content" aria-label="Therapy categories">
+        <div className="shop-toolbar">
+          <div className="shop-search">
+            <Search size={18} aria-hidden="true" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search therapies"
+              aria-label="Search therapies"
+            />
+          </div>
+          <div className="category-pills" aria-label="Filter by category">
+            {therapyCategories.map((item) => (
+              <button
+                key={item}
+                className={category === item ? "is-active" : ""}
+                onClick={() => setCategory(item)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="shop-heading-row">
+          <div>
+            <span className="eyebrow">BROWSE BY NEED</span>
+            <h2>{category === "All" ? "Everyday foot-care options" : `${category} care`}</h2>
+          </div>
+          <span>{shownTherapies.length} categories</span>
+        </div>
+
+        {shownTherapies.length > 0 ? (
+          <div className="therapy-grid">
+            {shownTherapies.map((therapy) => (
+              <article className="therapy-card" key={therapy.name}>
+                <div className={`product-illustration ${therapy.accent}`} aria-hidden="true">
+                  <div className="product-box"><span>DR.</span><strong>CARE</strong></div>
+                  <div className="product-tube"><Footprints size={25} /></div>
+                </div>
+                <div className="therapy-card-copy">
+                  <span className="therapy-category">{therapy.category}</span>
+                  <h3>{therapy.name}</h3>
+                  <p>{therapy.description}</p>
+                  <div className="therapy-use"><Check size={15} /> {therapy.use}</div>
+                  <a
+                    href={`https://www.walgreens.com/search/results.jsp?Ntt=${encodeURIComponent(therapy.query)}&analyticsTag=global`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Browse at Walgreens <ExternalLink size={15} />
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-shop-state">
+            <PackageSearch size={30} />
+            <h3>No matching therapies</h3>
+            <p>Try a broader search or choose another category.</p>
+          </div>
+        )}
+      </section>
+
+      <section className="storefront-note">
+        <div><ShieldCheck size={22} /></div>
+        <p>
+          <strong>Before you buy:</strong> These links are for general shopping convenience,
+          not personalized treatment advice. Read product labels and ask a pharmacist or
+          clinician if you are unsure—especially if you have diabetes, poor circulation,
+          an open wound, or signs of infection.
+        </p>
+      </section>
+    </div>
+  );
+}
 
 function App() {
+  const [page, setPage] = useState<Page>(() =>
+    window.location.hash === "#therapies" ? "therapies" : "check",
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -34,6 +211,15 @@ function App() {
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState("");
   const [result, setResult] = useState<DiagnosticResult | null>(null);
+
+  useEffect(() => {
+    const syncPage = () => {
+      setPage(window.location.hash === "#therapies" ? "therapies" : "check");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    window.addEventListener("hashchange", syncPage);
+    return () => window.removeEventListener("hashchange", syncPage);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -179,7 +365,7 @@ function App() {
   return (
     <div className="site-shell">
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="Dr. Fungus home">
+        <a className="brand" href="#check" aria-label="Dr. Fungus home">
           <span className="brand-mark" aria-hidden="true">
             <span />
             <span />
@@ -188,13 +374,16 @@ function App() {
           </span>
           <span>Dr. Fungus</span>
         </a>
-        <div className="header-note">
-          <LockKeyhole size={16} aria-hidden="true" />
-          Private by design
-        </div>
+        <nav className="main-nav" aria-label="Main navigation">
+          <a className={page === "check" ? "is-active" : ""} href="#check">Photo check</a>
+          <a className={page === "therapies" ? "is-active" : ""} href="#therapies">Therapies</a>
+        </nav>
+        <div className="header-note"><LockKeyhole size={16} aria-hidden="true" /> Private by design</div>
       </header>
 
       <main id="top">
+        {page === "check" ? (
+          <>
         <section className="workspace" aria-labelledby="page-title">
           <div className="intro-panel">
             <div className="intro-photo" aria-hidden="true">
@@ -399,10 +588,14 @@ function App() {
             fever, pus, blackened skin, loss of feeling, or a wound that is not healing—especially if you have diabetes or poor circulation.
           </p>
         </section>
+          </>
+        ) : (
+          <TherapiesPage />
+        )}
       </main>
 
       <footer>
-        <a className="brand footer-brand" href="#top">
+        <a className="brand footer-brand" href="#check">
           <span className="brand-mark" aria-hidden="true"><span /><span /><span /><span /></span>
           <span>Dr. Fungus</span>
         </a>
