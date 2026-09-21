@@ -181,6 +181,12 @@ main { padding: 0 22px; }
 .directory-search-panel input { border: 0; outline: 0; min-width: 0; padding: 9px 0; color: var(--ink); }
 .directory-search-panel button { border: 0; color: white; background: var(--blue); border-radius: 8px; padding: 11px 15px; display: inline-flex; align-items: center; gap: 7px; font-weight: 600; white-space: nowrap; }
 .directory-search-panel > small { grid-column: 2; color: rgba(255,255,255,.5); font-size: .65rem; margin-top: -17px; }
+.provider-gate { margin-top: 45px; border: 1px solid var(--line); background: rgba(255,255,255,.55); border-radius: 18px; padding: 26px 28px; display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; }
+.provider-gate > div { width: 48px; height: 48px; color: var(--blue); background: #e3eff4; border-radius: 50%; display: grid; place-items: center; }
+.provider-gate section > span { color: var(--blue); font-size: .63rem; letter-spacing: .11em; font-weight: 600; }
+.provider-gate h3 { font-family: "Newsreader", serif; font-size: 1.45rem; font-weight: 400; margin: 4px 0; }
+.provider-gate p { color: var(--muted); font-size: .72rem; line-height: 1.5; margin: 0; max-width: 650px; }
+.provider-gate a { color: white; background: var(--blue); text-decoration: none; border-radius: 9px; padding: 11px 14px; display: inline-flex; align-items: center; gap: 7px; font-size: .73rem; font-weight: 600; white-space: nowrap; }
 .provider-results { margin-top: 45px; }
 .provider-results-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
 .provider-results-heading span { color: var(--blue); letter-spacing: .12em; font-size: .67rem; font-weight: 600; }
@@ -346,6 +352,8 @@ footer { border-top: 1px solid var(--line); min-height: 180px; padding: 38px max
   .directory-search-panel form > div { grid-template-columns: auto 1fr; }
   .directory-search-panel button { grid-column: 1 / -1; justify-content: center; }
   .provider-results-heading { align-items: start; flex-direction: column; }
+  .provider-gate { grid-template-columns: auto 1fr; padding: 21px 18px; }
+  .provider-gate a { grid-column: 1 / -1; justify-content: center; }
   .provider-card { grid-template-columns: auto 1fr; align-items: start; padding: 18px; }
   .provider-action { grid-column: 1 / -1; min-width: 0; align-items: stretch; border-top: 1px solid var(--line); padding-top: 14px; }
   .provider-action button { justify-content: space-between; }

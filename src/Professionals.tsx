@@ -14,6 +14,7 @@ import {
   Video,
 } from "lucide-react";
 import { FormEvent, useState } from "react";
+import type { DiagnosticResult } from "./lib/diagnostics";
 
 type Professional = {
   id: number;
@@ -26,6 +27,7 @@ type Professional = {
   availability: string;
   initials: string;
   telehealth: boolean;
+  careFocus: Array<"podiatry" | "dermatology" | "primary-care">;
   subscriptionStatus: "active" | "inactive";
 };
 
@@ -41,6 +43,7 @@ const professionals: Professional[] = [
     availability: "Next opening: Tuesday",
     initials: "MC",
     telehealth: true,
+    careFocus: ["podiatry", "dermatology"],
     subscriptionStatus: "active",
   },
   {
@@ -54,6 +57,7 @@ const professionals: Professional[] = [
     availability: "Next opening: Wednesday",
     initials: "JE",
     telehealth: false,
+    careFocus: ["dermatology", "primary-care"],
     subscriptionStatus: "active",
   },
   {
@@ -67,6 +71,7 @@ const professionals: Professional[] = [
     availability: "Next opening: Friday",
     initials: "RO",
     telehealth: true,
+    careFocus: ["podiatry"],
     subscriptionStatus: "active",
   },
   {
@@ -80,6 +85,7 @@ const professionals: Professional[] = [
     availability: "Unavailable",
     initials: "SP",
     telehealth: false,
+    careFocus: ["podiatry"],
     subscriptionStatus: "inactive",
   },
 ];
@@ -88,7 +94,37 @@ const subscribedProfessionals = professionals.filter(
   (professional) => professional.subscriptionStatus === "active",
 );
 
-export function ProfessionalDirectory({ concern }: { concern: string }) {
+function careRecommendation(result: DiagnosticResult) {
+  const possibleMatch = result.possibleMatch.toLowerCase();
+
+  if (possibleMatch.includes("athlete") || possibleMatch.includes("skin")) {
+    return {
+      focus: new Set<Professional["careFocus"][number]>(["dermatology", "primary-care"]),
+      label: "Dermatology or primary care",
+      reason: "Your simulated result points toward a skin concern.",
+    };
+  }
+
+  if (possibleMatch.includes("no simulated")) {
+    return {
+      focus: new Set<Professional["careFocus"][number]>(["podiatry", "dermatology", "primary-care"]),
+      label: "Podiatry, dermatology, or primary care",
+      reason: "Your simulated result did not identify a specific care category.",
+    };
+  }
+
+  return {
+    focus: new Set<Professional["careFocus"][number]>(["podiatry"]),
+    label: "Podiatry",
+    reason: "Your simulated result points toward a nail, toe, or foot concern.",
+  };
+}
+
+export function ProfessionalDirectory({
+  diagnosticResult,
+}: {
+  diagnosticResult: DiagnosticResult | null;
+}) {
   const [zipCode, setZipCode] = useState("");
   const [searchedZip, setSearchedZip] = useState("");
 
@@ -96,6 +132,13 @@ export function ProfessionalDirectory({ concern }: { concern: string }) {
     event.preventDefault();
     if (/^\d{5}$/.test(zipCode)) setSearchedZip(zipCode);
   };
+
+  const recommendation = diagnosticResult ? careRecommendation(diagnosticResult) : null;
+  const matchingProfessionals = recommendation
+    ? subscribedProfessionals.filter((professional) =>
+        professional.careFocus.some((focus) => recommendation.focus.has(focus)),
+      )
+    : [];
 
   return (
     <section className="professional-directory" aria-labelledby="professional-title">
@@ -111,10 +154,10 @@ export function ProfessionalDirectory({ concern }: { concern: string }) {
         </div>
       </div>
 
-      <div className="directory-search-panel">
+      {diagnosticResult && recommendation ? <div className="directory-search-panel">
         <div className="directory-context">
           <Stethoscope size={20} />
-          <div><span>Searching care for</span><strong>{concern}</strong></div>
+          <div><span>Suggested care type</span><strong>{recommendation.label}</strong></div>
         </div>
         <form onSubmit={findProfessionals}>
           <label htmlFor="provider-zip">Your ZIP code</label>
@@ -133,20 +176,30 @@ export function ProfessionalDirectory({ concern }: { concern: string }) {
             <button type="submit"><Search size={17} /> Find care</button>
           </div>
         </form>
-        <small>Prototype directory: locations and profiles shown below are sample data.</small>
-      </div>
+        <small>{recommendation.reason} Profiles and locations below are sample data.</small>
+      </div> : (
+        <div className="provider-gate">
+          <div><LockKeyhole size={21} /></div>
+          <section>
+            <span>PROVIDER MATCHING UNLOCKS AFTER YOUR PHOTO CHECK</span>
+            <h3>Complete the assessment to receive a care-type recommendation.</h3>
+            <p>The eventual AI result will supply specialty, urgency, and matching signals. It will not select providers based on who pays more.</p>
+          </section>
+          <a href="#check">Start with a photo <ArrowRight size={16} /></a>
+        </div>
+      )}
 
-      {searchedZip ? (
+      {searchedZip && diagnosticResult ? (
         <div className="provider-results" aria-live="polite">
           <div className="provider-results-heading">
             <div>
               <span>SUBSCRIBED PROFESSIONALS</span>
               <h3>Care options near {searchedZip}</h3>
             </div>
-            <strong>{subscribedProfessionals.length} sample matches</strong>
+            <strong>{matchingProfessionals.length} sample matches · {diagnosticResult.urgency.toLowerCase()} follow-up</strong>
           </div>
           <div className="provider-list">
-            {subscribedProfessionals.map((professional) => (
+            {matchingProfessionals.map((professional) => (
               <article className="provider-card" key={professional.id}>
                 <div className="provider-avatar" aria-hidden="true">{professional.initials}</div>
                 <div className="provider-main">

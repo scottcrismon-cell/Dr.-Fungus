@@ -586,7 +586,7 @@ function App() {
           </div>
         </section>
 
-        <ProfessionalDirectory concern={concern} />
+        <ProfessionalDirectory diagnosticResult={result} />
 
         <section className="guidance" aria-labelledby="guidance-title">
           <div>
