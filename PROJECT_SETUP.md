@@ -21,6 +21,10 @@ The product must not present its output as a confirmed medical diagnosis. A prod
   follow-up timing, suggested next steps, and an explicit prototype warning.
 - A second Therapies page with searchable foot-care categories and external
   retailer links. Dr. Fungus does not currently process purchases or checkout.
+- A prototype professional network: simulated subscribed-provider results appear
+  after a photo assessment, plus a clinician profile and membership preview.
+- Patient and professional sign-in/account-creation screens that switch from
+  safe demo behavior to Supabase Auth when environment credentials are present.
 - A generated editorial hero image and custom favicon.
 - A production build command that completes successfully.
 - Source code committed and pushed to the GitHub `main` branch.
@@ -137,8 +141,10 @@ Dr Fungus/
 │   └── favicon.svg             Site icon
 ├── supabase/
 │   └── migrations/
-│       └── 001_create_assessments.sql
-│                                  Database, security policies, and image bucket
+│       ├── 001_create_assessments.sql
+│       │                          Assessments, security policies, and image bucket
+│       └── 002_accounts_and_professionals.sql
+│                                  Account roles and professional network data
 ├── .env.example               Required public Supabase settings
 ├── .openai/hosting.json       OpenAI Sites registration and build-output setting
 ├── package.json               App dependencies and commands

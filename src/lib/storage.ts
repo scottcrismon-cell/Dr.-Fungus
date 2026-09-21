@@ -17,7 +17,7 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 
-const supabase = isSupabaseConfigured
+export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl!, supabaseKey!)
   : null;
 

@@ -21,12 +21,14 @@ import {
   type DiagnosticResult,
 } from "./lib/diagnostics";
 import { isSupabaseConfigured, saveAssessment } from "./lib/storage";
+import { ClinicianPortal, ProfessionalDirectory } from "./Professionals";
+import { AuthPage } from "./Auth";
 
 const MAX_FILE_SIZE = 12 * 1024 * 1024;
 const acceptedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
 
 type Stage = "idle" | "ready" | "saving" | "complete" | "error";
-type Page = "check" | "therapies";
+type Page = "check" | "therapies" | "clinicians" | "account";
 
 const therapyCategories = ["All", "Skin", "Nails", "Comfort"] as const;
 type TherapyCategory = (typeof therapyCategories)[number];
@@ -199,7 +201,13 @@ function TherapiesPage() {
 
 function App() {
   const [page, setPage] = useState<Page>(() =>
-    window.location.hash === "#therapies" ? "therapies" : "check",
+    window.location.hash === "#therapies"
+      ? "therapies"
+      : window.location.hash === "#clinicians"
+        ? "clinicians"
+        : window.location.hash === "#account"
+          ? "account"
+        : "check",
   );
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -214,7 +222,15 @@ function App() {
 
   useEffect(() => {
     const syncPage = () => {
-      setPage(window.location.hash === "#therapies" ? "therapies" : "check");
+      setPage(
+        window.location.hash === "#therapies"
+          ? "therapies"
+          : window.location.hash === "#clinicians"
+            ? "clinicians"
+            : window.location.hash === "#account"
+              ? "account"
+            : "check",
+      );
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
     window.addEventListener("hashchange", syncPage);
@@ -377,8 +393,9 @@ function App() {
         <nav className="main-nav" aria-label="Main navigation">
           <a className={page === "check" ? "is-active" : ""} href="#check">Photo check</a>
           <a className={page === "therapies" ? "is-active" : ""} href="#therapies">Therapies</a>
+          <a className={page === "clinicians" ? "is-active" : ""} href="#clinicians">For clinicians</a>
         </nav>
-        <div className="header-note"><LockKeyhole size={16} aria-hidden="true" /> Private by design</div>
+        <a className={`account-link ${page === "account" ? "is-active" : ""}`} href="#account"><LockKeyhole size={15} aria-hidden="true" /> Sign in</a>
       </header>
 
       <main id="top">
@@ -569,6 +586,8 @@ function App() {
           </div>
         </section>
 
+        <ProfessionalDirectory concern={concern} />
+
         <section className="guidance" aria-labelledby="guidance-title">
           <div>
             <span className="eyebrow">A BETTER PHOTO HELPS</span>
@@ -589,8 +608,12 @@ function App() {
           </p>
         </section>
           </>
-        ) : (
+        ) : page === "therapies" ? (
           <TherapiesPage />
+        ) : page === "clinicians" ? (
+          <ClinicianPortal />
+        ) : (
+          <AuthPage />
         )}
       </main>
 
