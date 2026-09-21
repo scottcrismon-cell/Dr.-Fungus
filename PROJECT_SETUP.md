@@ -23,8 +23,8 @@ The product must not present its output as a confirmed medical diagnosis. A prod
   retailer links. Dr. Fungus does not currently process purchases or checkout.
 - A prototype professional network: simulated subscribed-provider results appear
   after a photo assessment, plus a clinician profile and membership preview.
-- Patient and professional sign-in/account-creation screens that switch from
-  safe demo behavior to Supabase Auth when environment credentials are present.
+- Passwordless patient and professional account screens that use Supabase email
+  magic links when environment credentials are present.
 - A generated editorial hero image and custom favicon.
 - A production build command that completes successfully.
 - Source code committed and pushed to the GitHub `main` branch.

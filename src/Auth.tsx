@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import {
-  createAccount,
   getCurrentUser,
   isSupabaseConfigured,
-  signIn,
+  onAuthChange,
+  requestMagicLink,
   signOut,
   type AccountRole,
   type AppUser,
@@ -29,7 +29,6 @@ export function AuthPage() {
   const [role, setRole] = useState<AccountRole>("patient");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [user, setUser] = useState<AppUser | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -38,6 +37,7 @@ export function AuthPage() {
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     void getCurrentUser().then(setUser).catch(() => setUser(null));
+    return onAuthChange(setUser);
   }, []);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -47,25 +47,18 @@ export function AuthPage() {
     setMessage("");
 
     try {
-      if (mode === "signup") {
-        const created = await createAccount(email, password, role, fullName);
-        setUser(created.requiresEmailConfirmation ? null : created.user);
-        setMessage(
-          created.requiresEmailConfirmation
-            ? "Check your email to confirm your account, then return to sign in."
-            : isSupabaseConfigured
-              ? "Your account is ready."
-              : "Demo account created in this page only. Nothing was saved.",
-        );
-      } else {
-        const signedIn = await signIn(email, password);
-        const accountRole = isSupabaseConfigured ? roleFromUser(signedIn) : role;
+      const authenticatedUser = await requestMagicLink(email, role, fullName);
+      if (authenticatedUser) {
         setUser({
-          ...signedIn,
-          user_metadata: { ...signedIn.user_metadata, account_type: accountRole },
+          ...authenticatedUser,
+          user_metadata: { ...authenticatedUser.user_metadata, account_type: role },
         });
-        setMessage(isSupabaseConfigured ? "Welcome back." : "Demo sign-in complete. Nothing was saved.");
       }
+      setMessage(
+        isSupabaseConfigured
+          ? "Magic link sent. Open the email on this device to finish signing in."
+          : `Demo ${mode === "signup" ? "account creation" : "sign-in"} complete. Nothing was saved.`,
+      );
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "We couldn’t complete that request.");
     } finally {
@@ -150,9 +143,8 @@ export function AuthPage() {
         <form onSubmit={submit}>
           {mode === "signup" ? <label>Full name<input required value={fullName} onChange={(event) => setFullName(event.target.value)} autoComplete="name" /></label> : null}
           <label>Email address<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" /></label>
-          <label>Password<input required type="password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "signup" ? "new-password" : "current-password"} /></label>
           <button className="primary-button" disabled={busy} type="submit">
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : `Create ${role} account`} <ArrowRight size={17} />
+            {busy ? "Please wait…" : mode === "signin" ? "Email me a sign-in link" : `Create ${role} account`} <ArrowRight size={17} />
           </button>
         </form>
 
@@ -160,8 +152,8 @@ export function AuthPage() {
         {message ? <div className="auth-message" role="status">{message}</div> : null}
         <p className="auth-mode-note">
           {isSupabaseConfigured
-            ? "Secure authentication is connected through Supabase."
-            : "Demo mode: accounts and passwords are not transmitted or saved."}
+            ? "Passwordless authentication is secured through Supabase."
+            : "Demo mode: account details are not transmitted or saved."}
         </p>
       </section>
     </div>

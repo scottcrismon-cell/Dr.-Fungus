@@ -12,55 +12,43 @@ export async function getCurrentUser(): Promise<AppUser | null> {
   return data.user;
 }
 
-export async function signIn(email: string, password: string): Promise<AppUser> {
+export async function requestMagicLink(
+  email: string,
+  role: AccountRole,
+  fullName: string,
+): Promise<AppUser | null> {
   if (!supabase) {
     return {
       id: crypto.randomUUID(),
       email,
-      user_metadata: { account_type: "patient", demo: true },
+      user_metadata: { account_type: role, full_name: fullName, demo: true },
     };
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  if (!data.user) throw new Error("No user was returned after sign in.");
-  return data.user;
-}
-
-export async function createAccount(
-  email: string,
-  password: string,
-  role: AccountRole,
-  fullName: string,
-): Promise<{ user: AppUser | null; requiresEmailConfirmation: boolean }> {
-  if (!supabase) {
-    return {
-      user: {
-        id: crypto.randomUUID(),
-        email,
-        user_metadata: { account_type: role, full_name: fullName, demo: true },
-      },
-      requiresEmailConfirmation: false,
-    };
-  }
-
-  const { data, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signInWithOtp({
     email,
-    password,
-    options: { data: { account_type: role, full_name: fullName } },
+    options: {
+      shouldCreateUser: true,
+      emailRedirectTo: `${window.location.origin}/#account`,
+      data: { account_type: role, full_name: fullName || undefined },
+    },
   });
   if (error) throw error;
-
-  return {
-    user: data.user,
-    requiresEmailConfirmation: Boolean(data.user && !data.session),
-  };
+  return null;
 }
 
 export async function signOut(): Promise<void> {
   if (!supabase) return;
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
+}
+
+export function onAuthChange(callback: (user: AppUser | null) => void): () => void {
+  if (!supabase) return () => undefined;
+  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session?.user ?? null);
+  });
+  return () => data.subscription.unsubscribe();
 }
 
 export { isSupabaseConfigured };

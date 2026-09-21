@@ -35,15 +35,11 @@ export async function saveAssessment(
   const {
     data: { user: existingUser },
   } = await supabase.auth.getUser();
-  let user = existingUser;
+  const user = existingUser;
 
   if (!user) {
-    const { data, error } = await supabase.auth.signInAnonymously();
-    if (error) throw error;
-    user = data.user;
+    throw new Error("AUTH_REQUIRED");
   }
-
-  if (!user) throw new Error("Could not start a private upload session.");
 
   const extension = draft.file.name.split(".").pop()?.toLowerCase() || "jpg";
   const assessmentId = crypto.randomUUID();

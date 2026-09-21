@@ -373,7 +373,11 @@ function App() {
       setStage("complete");
     } catch (submissionError) {
       console.error(submissionError);
-      setError("We couldn’t save this photo. Please try again.");
+      setError(
+        submissionError instanceof Error && submissionError.message === "AUTH_REQUIRED"
+          ? "Sign in or create an account before saving your private photo."
+          : "We couldn’t save this photo. Please try again.",
+      );
       setStage("error");
     }
   };
@@ -580,7 +584,7 @@ function App() {
 
             <p className="mode-note">
               {isSupabaseConfigured
-                ? "Secure storage is connected."
+                ? "Secure storage is connected. Sign in to save photos to your account."
                 : "Prototype mode: your image is previewed on this device and is not uploaded."}
             </p>
           </div>
